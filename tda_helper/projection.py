@@ -1,5 +1,5 @@
 """
-The following module enables projection for points in $R^d$ to a point in $R^1$.
+The following module enables projection for points in $R^d$ to a point in $R$.
 """
 
 import numpy as np
@@ -63,6 +63,3 @@ def project_point(point: ArrayLike, method: str) -> np.float64:
         return smoothmax(vec)
     else:
         raise ValueError("Method must be valid.")
-
-test = [1,2,3,4,5]
-print(project_point(test, "sdfo"))

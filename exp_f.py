@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import kmapper as km
 import networkx as nx
 
+from typing import List
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
 
@@ -327,6 +328,21 @@ def plot_betti_vs_rho_minmax(summary: pd.DataFrame, title_suffix: str = "") -> N
     #plt.grid()
     #plt.show()
 
+def plot_cycles_vs_rho(summary: pd.DataFrame) -> None:
+    x = summary["rho_abs_target"].to_numpy()
+    
+    yupperb1 = summary["beta1_mean"] + summary["beta1_std"]
+    ylowerb1 = summary["beta1_mean"] - summary["beta1_std"]
+
+    plt.figure()
+    plt.plot(x, summary["beta1_mean"], color='seagreen', lw=1.5, marker='o', ms=4, label=r"Mean $\beta_1$")
+    plt.fill_between(x, ylowerb1, yupperb1, color='grey', alpha=0.3, label="Error band")
+    plt.legend()
+    plt.xlabel(r"$|\rho|$")
+    plt.ylabel(r"$\beta_1$")
+    plt.grid()
+    plt.show()
+
 def plot_betti_vs_rho_mode(summary: pd.DataFrame) -> None:
     x = summary["rho_abs_target"].to_numpy()
     plt.figure()
@@ -334,5 +350,55 @@ def plot_betti_vs_rho_mode(summary: pd.DataFrame) -> None:
     plt.legend()
     plt.xlabel(r"$|\rho|$")
     plt.ylabel(r"$\beta_0$")
+    plt.grid()
+    plt.show()
+
+def plot_summaries_by_cover(summaries: List[pd.DataFrame], covers_used=List[int]) -> None:
+    '''
+    Plot multiple E[\beta_0] vs |\rho| lines with sweeps using different amount of covers (n_cubes param in build_mapper_graph)
+    
+    :param summaries: List of summaries of type df
+    :param covers_used: List of cube param passed into sweep function
+    '''
+    if len(summaries)!=len(covers_used):
+        return IndexError(f"length of summaries list is {len(summaries)}, while length of covers_used list is {len(covers_used)}")
+    plt.figure()
+    c_idx = 0
+    for summary in summaries:
+        x = summary["rho_abs_target"].to_numpy()
+        current_cover_amt = covers_used[c_idx]
+        plt.plot(x, summary["beta0_mean"], label=r"Mean $\beta_0$ (covers=" + f"{current_cover_amt})")
+        c_idx += 1
+    plt.axhline(y=1.0, color='black', linestyle='--', label=r"$\beta_0 = 1$")
+    plt.legend()
+    plt.xlabel(r"$|\rho|$")
+    plt.ylabel(r"$\beta_0$")
+    plt.ylim(bottom=0)
+    plt.grid()
+    plt.show()
+
+def plot_summaries_by_overlap(summaries: List[pd.DataFrame], overlaps_used=List[float]) -> None:
+    '''
+    Plot multiple E[\beta_0] vs |\rho| lines with sweeps using different overlap values (overlap param in build_mapper_graph).
+
+    Overlaps O in overlaps_used must be between 0 and 1.
+    
+    :param summaries: List of summaries of type df
+    :param covers_used: List of cube param passed into sweep function
+    '''
+    if len(summaries)!=len(overlaps_used):
+        return IndexError(f"length of summaries list is {len(summaries)}, while length of covers_used list is {len(overlaps_used)}")
+    plt.figure()
+    o_idx = 0
+    for summary in summaries:
+        x = summary["rho_abs_target"].to_numpy()
+        current_overlap = overlaps_used[o_idx]
+        plt.plot(x, summary["beta0_mean"], label=r"Mean $\beta_0$ ($\alpha$=" + f"{current_overlap})")
+        o_idx += 1
+    plt.axhline(y=1.0, color='black', linestyle='--', label=r"$\beta_0 = 1$")
+    plt.legend()
+    plt.xlabel(r"$|\rho|$")
+    plt.ylabel(r"$\beta_0$")
+    plt.ylim(bottom=0)
     plt.grid()
     plt.show()
